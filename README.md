@@ -48,7 +48,7 @@ Deconstruction:
 "type": "global",
 "data": 
    [ ["\n", "\n"],
-     { "type": 'class',
+     { "type": "class",
        "data": 
        [ 
           { 
