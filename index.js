@@ -10,7 +10,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 const CommentReader = require("./source/commentReader.js");
 const FileReader = require("./source/fileReader.js");
-//const FunctionOrderer = require("./source/functionOrderer.js");
+const FunctionOrderer = require("./source/functionOrderer.js");
 const JSDeconstructor = require("./source/jsDeconstructor.js")
 
 var DEFAULT_CONFIG = {
@@ -29,7 +29,8 @@ FileReader(function (files) {
             var c = CommentReader.getConfig(file, DEFAULT_CONFIG)
             if (c) {
                 entry = file;
-                config = c;
+                config = c[0];
+                file.data = c[1];
                 return false;
             }
             return true;
@@ -52,63 +53,50 @@ FileReader(function (files) {
     })
 
     console.log("Filtered out " + num + " files");
-    files.forEach((file) => {
 
-        file.layered = JSDeconstructor(file)
+
+
+    var exports = {};
+
+    files.forEach((file) => {
+        CommentReader.getInfo(file);
+        file.exports.forEach((ex) => {
+            exports[ex.as] = {
+                name: ex.name,
+                as: ex.as,
+                data: ex,
+                file: file,
+                code: null
+            }
+        })
+
     })
 
-    var out = [];
+    files.forEach((file) => {
 
-    if (config.useStrict) out.push("\"use strict\";");
-    if (config.useRestrict) out.push("\"use restrict\";");
-
-    out.push("\n");
-
-    out.push("/*", config.license, "*/");
+        file.layered = JSDeconstructor(file);
+        FunctionOrderer(file);
+    })
 
 
+    for (var i in exports) {
+        var b = exports[i].file;
+        var l = exports[i].file.layered;
+        exports[i].code;
 
+        if (l.data.every((c) => {
+                if (!c.type) return true;
+                if (c.names && c.names.indexOf(exports[i].name) != -1) {
+                    exports[i].code = c;
 
-    var build = function (dt) {
-        switch (dt.type) {
-            case "global":
-
-                dt.data.forEach((d) => {
-                    build(d);
-                })
-                break;
-            case "class":
-
-                out.push(dt.name, " {\n");
-
-                dt.data.forEach((d) => {
-                    build(d);
-                })
-
-                out.push("}\n");
-
-                break;
-            case "method":
-                out.push(dt.name, " {\n");
-
-                dt.data.forEach((d) => {
-                    build(d);
-                })
-
-                out.push("}\n")
-
-                break;
-            default:
-                if (dt[0]) {
-                    dt.forEach((d) => {
-                        out.push(d);
-                    })
-                } else {
-
+                    return false;
                 }
-                break;
-        }
+                return true;
+            })) console.log("WARN: Could not find export " + exports[i].name + " in file " + b.dir)
     }
-    build(entry.layered);
-    console.log(out.join(""))
+
+
+    console.log(entry.layered.data[1])
+
+
 })

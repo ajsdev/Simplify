@@ -39,7 +39,9 @@ module.exports = function (call) {
                     } else {
                         if (isJS(file)) results.push({
                             dir: file,
-                            parentDir: dir
+                            parentDir: dir,
+                            children: [],
+                            parent: null
                         });
                         if (!--pending) done(null, results);
                     }

@@ -132,21 +132,26 @@ module.exports = function (file) {
                 a.type = "anfunction"
                 out[0].reverse();
                 a.name = "function " + out[0].join("");
+                a.names = [];
+
                 for (var i = 2; i < out.length - 1; i += 2) {
-                    if (!out[i] === "=") break;
+                    if (out[i] != "=") break;
                     out[i + 1].reverse();
+                    a.names.push(out[i + 1].join(""))
                     a.name = out[i + 1].join("") + " = " + a.name;
                 }
                 if (out[i] && out[i].join("") === "rav") {
                     i++;
                     a.name = "var " + a.name
+                    a.var = true;
                 }
                 p.data[p.data.length - 1] = rejoin(out, i);
             } else if (out[2] && out[2].join("") === "noitcnuf") {
                 a.type = "function";
                 out[1].reverse();
                 out[0].reverse();
-                a.name = out[1].join("") + out[0].join("");
+                a.name = "function " + out[1].join("") + out[0].join("");
+                a.names = [out[1].join("")]
                 p.data[p.data.length - 1] = rejoin(out, 3);
             } else if (out[1] && out[1].join("") === "ssalc") {
                 a.type = "class";
@@ -154,15 +159,18 @@ module.exports = function (file) {
 
 
                 a.name = "class " + out[0].join("")
+                a.names = [out[0].join("")];
                 for (var i = 2; i < out.length - 1; i += 2) {
-                    if (!out[i] === "=") break;
+                    if (out[i] != "=") break;
 
                     out[i + 1].reverse();
                     a.name = out[i + 1].join("") + " = " + a.name;
+                    a.names.push(out[i + 1].join(""))
                 }
                 if (out[i] && out[i].join("") === "rav") {
                     i++;
                     a.name = "var " + a.name
+                    a.var = true;
                 }
 
                 p.data[p.data.length - 1] = rejoin(out, i);

@@ -17,7 +17,7 @@ module.exports = {
 
         if (!a) return false;
 
-        file.data = a.split("*/").slice(1).join("*/")
+
 
         var b = a.split("*/")[0];
 
@@ -63,6 +63,97 @@ module.exports = {
 
             config[name] = value;
         })
+        return [config, a.split("*/").slice(1).join("*/")];
+    },
+    getCmd: function (b) {
+
+        var config = {
+            as: b[1],
+            scope: 0
+        }
+
+        for (var i = 2; i < b.length - 1; i += 2) {
+
+            switch (b[i]) {
+                case "as":
+                    config.as = b[i + 1];
+                    break;
+                case "scope":
+                    config.scope = b[i + 1]
+                    break;
+
+            }
+        }
+
         return config;
+    },
+    getInfo: function (file) {
+        var a = file.data.split("\n");
+        var d = 0;
+
+        var info = [];
+        var imports = [];
+        var exports = [];
+
+        a = a.filter((b) => {
+            b = b.trim();
+            if (d !== 2 && b.charAt(0) == "/" && b.charAt(1) == "/") {
+                b = b.substr(2).trim();
+
+                b = b.split(" ");
+
+                var key = b[0];
+
+                switch (key) {
+                    case "import":
+
+                        var dt = b[1];
+                        if (dt.substr(0, 8) == "load(") {
+
+                            imports.push({
+                                file: dt.substring(8, dt.length - 1),
+                                data: b.slice(1)
+                            })
+                        } else {
+                            imports.push({
+                                name: dt,
+                                data: b.slice(1)
+                            })
+                        }
+
+                        break;
+                    case "export":
+
+                        var d = this.getCmd(b);
+
+                        exports.push({
+                            name: b[1],
+                            as: d.as,
+                            scope: d.scope,
+                            data: b.slice(1)
+                        })
+                        break;
+                    case "set":
+                        info.push({
+                            type: "set",
+                            data: b.slice(1)
+                        })
+                        break;
+                }
+
+                d = 1;
+                return false;
+            } else if (d) { // stop
+                d = 2;
+            }
+            return true;
+        })
+
+
+        file.info = info;
+        file.data = a.join("\n");
+        file.exports = exports;
+        file.imports = imports
+
     }
 }
