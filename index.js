@@ -43,14 +43,70 @@ FileReader(function (files) {
     var ln = entry.parentDir.length;
     files = files.filter((file) => {
 
-        if (file.dir.slice(0, ln) !== ln) {
+        if (file.dir.slice(0, ln) !== entry.parentDir) {
             num++;
             return false;
         }
+
         return true;
     })
 
     console.log("Filtered out " + num + " files");
+    files.forEach((file) => {
 
-    JSDeconstructor(entry)
+        file.layered = JSDeconstructor(file)
+    })
+
+    var out = [];
+
+    if (config.useStrict) out.push("\"use strict\";");
+    if (config.useRestrict) out.push("\"use restrict\";");
+
+    out.push("\n");
+
+    out.push(config.license);
+
+
+
+
+    var build = function (dt) {
+        switch (dt.type) {
+            case "global":
+
+                dt.data.forEach((d) => {
+                    build(d);
+                })
+                break;
+            case "class":
+
+                out.push(dt.name, " {\n");
+
+                dt.data.forEach((d) => {
+                    build(d);
+                })
+
+                out.push("}\n");
+
+                break;
+            case "method":
+                out.push(dt.name, " {\n");
+
+                dt.data.forEach((d) => {
+                    build(d);
+                })
+
+                out.push("}\n")
+
+                break;
+            default:
+                if (typeof dt == "object") {
+
+                } else {
+                    out.push(dt);
+                }
+                break;
+        }
+    }
+    build(entry.layered);
+    console.log(out.join(""))
 })

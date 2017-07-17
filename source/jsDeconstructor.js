@@ -24,7 +24,7 @@ module.exports = function (file) {
         mlineComment = false
 
     var out = {
-        type: "",
+        type: "global",
         data: [],
         parent: null,
         scope: 0
@@ -49,6 +49,126 @@ module.exports = function (file) {
         }
     }
 
+    function add() {
+
+        if (current.length) insertTo.data.push(current);
+        current = [];
+    }
+
+    function peek(a) {
+        return a[a.length - 1]
+    }
+
+    function rejoin(arr, cut) {
+        var b = arr.slice(cut);
+        b.reverse();
+        var o = [];
+        b.forEach((g, p) => {
+            if (p !== 0) o.push(" ");
+
+            for (var i = 0, len = g.length; i < len; i++) {
+                o.push(g[len - i - 1]);
+            }
+        })
+
+        return o;
+    }
+
+    function format(p, a) {
+
+        if (p.type == "class") {
+            a.type = "method";
+            a.name = p.data.pop().join("").trim();
+        } else {
+
+            var str = peek(p.data)
+            var s = false;
+            var out = [];
+            var cur = [];
+            for (var i = 0; i < str.length; i++) {
+                var char = str[str.length - i - 1];
+
+                if (char === "\n") {
+                    if (cur.length) out.push(cur);
+                    cur = [];
+                    var arr = str.slice(0, str.length - i);
+                    arr.reverse();
+                    out.push(arr)
+                    break;
+                };
+
+                switch (char) {
+                    case ")":
+
+                        cur.push(char);
+                        s = true;
+                        break;
+                    case "(":
+                        cur.push(char);
+                        if (cur.length) out.push(cur);
+                        cur = [];
+
+                        s = false;
+                        break;
+                    case " ":
+                        if (s) continue;
+                        if (cur.length) out.push(cur);
+                        cur = [];
+                        break;
+                    case "=":
+                        if (s) continue;
+                        if (cur.length) out.push(cur);
+                        cur = ["="];
+                        break;
+                    default:
+                        cur.push(char);
+                        break;
+                }
+            }
+            if (cur.length) out.push(cur);
+
+            if (out[1] && out[1].join("") === "noitcnuf") {
+                a.type = "anfunction"
+                out[0].reverse();
+                a.name = "function " + out[0].join("");
+                for (var i = 2; i < out.length - 1; i += 2) {
+                    if (!out[i] === "=") break;
+                    out[i + 1].reverse();
+                    a.name = out[i + 1].join("") + " = " + a.name;
+                }
+                if (out[i] && out[i].join("") === "rav") {
+                    i++;
+                    a.name = "var " + a.name
+                }
+                p.data = rejoin(out, i);
+            } else if (out[2] && out[2].join("") === "noitcnuf") {
+                a.type = "function";
+                out[1].reverse();
+                out[0].reverse();
+                a.name = out[1].join("") + out[0].join("");
+                p.data = rejoin(out, 3);
+            } else if (out[1] && out[1].join("") === "ssalc") {
+                a.type = "class";
+                out[0].reverse();
+
+
+                a.name = "class " + out[0].join("")
+                for (var i = 2; i < out.length - 1; i += 2) {
+                    if (!out[i] === "=") break;
+
+                    out[i + 1].reverse();
+                    a.name = out[i + 1].join("") + " = " + a.name;
+                }
+                if (out[i] && out[i].join("") === "rav") {
+                    i++;
+                    a.name = "var " + a.name
+                }
+                //console.log(out)
+                p.data = rejoin(out, i);
+
+            }
+        }
+    }
     for (i = 0; i < len; i++) {
         var char = data[i];
         switch (char) {
@@ -94,11 +214,7 @@ module.exports = function (file) {
                 }
                 break;
             case "{":
-
-                if (current.length) insertTo.data.push(current.join(""));
-
-                current = [];
-
+                add();
                 scope++;
                 var n = {
                     type: "",
@@ -106,27 +222,30 @@ module.exports = function (file) {
                     parent: insertTo,
                     scope: scope
                 }
+                format(insertTo, n)
                 insertTo.data.push(n)
                 insertTo = n;
                 break;
             case "}":
                 scope--;
-                if (current.length) insertTo.data.push(current.join(""));
-
-                current = [];
+                add();
+                //console.log(insertTo)
                 insertTo = insertTo.parent;
-
                 break;
             default:
-
                 current.push(char)
+                //  console.log(char)
+                /*
+                                var char2 = data[i + 1],
+                                    char3 = data[i + 2],
+                                    char4 = data[i + 3],
+                                    char5 = data[i + 4],
+                                    char6 = data[i + 5]
+                */
                 break;
         }
 
     }
-    if (current.length) insertTo.data.push(current.join(""));
-
-    current = [];
-
+    add();
     return out;
 }

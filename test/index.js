@@ -8,6 +8,14 @@ ALL RIGHTS RESERVED
 */
 
 
-function a() {
+class hello {
+    constructor() {
+
+
+    }
+    hello() {
+
+    }
+
 
 }
