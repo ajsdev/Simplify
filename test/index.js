@@ -7,15 +7,11 @@ ALL RIGHTS RESERVED
 ";
 */
 
-
 class hello {
     constructor() {
-
 
     }
     hello() {
 
     }
-
-
 }

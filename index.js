@@ -99,10 +99,12 @@ FileReader(function (files) {
 
                 break;
             default:
-                if (typeof dt == "object") {
-
+                if (dt[0]) {
+                    dt.forEach((d) => {
+                        out.push(d);
+                    })
                 } else {
-                    out.push(dt);
+
                 }
                 break;
         }

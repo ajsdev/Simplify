@@ -82,6 +82,7 @@ module.exports = function (file) {
         } else {
 
             var str = peek(p.data)
+
             var s = false;
             var out = [];
             var cur = [];
@@ -140,13 +141,13 @@ module.exports = function (file) {
                     i++;
                     a.name = "var " + a.name
                 }
-                p.data = rejoin(out, i);
+                p.data[p.data.length - 1] = rejoin(out, i);
             } else if (out[2] && out[2].join("") === "noitcnuf") {
                 a.type = "function";
                 out[1].reverse();
                 out[0].reverse();
                 a.name = out[1].join("") + out[0].join("");
-                p.data = rejoin(out, 3);
+                p.data[p.data.length - 1] = rejoin(out, 3);
             } else if (out[1] && out[1].join("") === "ssalc") {
                 a.type = "class";
                 out[0].reverse();
@@ -163,8 +164,8 @@ module.exports = function (file) {
                     i++;
                     a.name = "var " + a.name
                 }
-                //console.log(out)
-                p.data = rejoin(out, i);
+
+                p.data[p.data.length - 1] = rejoin(out, i);
 
             }
         }
@@ -229,19 +230,12 @@ module.exports = function (file) {
             case "}":
                 scope--;
                 add();
-                //console.log(insertTo)
+
                 insertTo = insertTo.parent;
                 break;
             default:
                 current.push(char)
-                //  console.log(char)
-                /*
-                                var char2 = data[i + 1],
-                                    char3 = data[i + 2],
-                                    char4 = data[i + 3],
-                                    char5 = data[i + 4],
-                                    char6 = data[i + 5]
-                */
+
                 break;
         }
 
