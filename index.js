@@ -64,7 +64,7 @@ FileReader(function (files) {
 
     out.push("\n");
 
-    out.push(config.license);
+    out.push("/*", config.license, "*/");
 
 
 
