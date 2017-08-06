@@ -33,15 +33,14 @@ module.exports = function (file) {
     var insertTo = out;
     var i;
 
-    function skip(char) {
+    function skip(match) {
         backslash = false;
-        current.push(char)
+        current.push(match)
         for (++i; i < len; i++) {
             char = data[i];
-
             current.push(char)
             if (char === "\\") backslash = true;
-            else if (char === char && !backslash) {
+            else if (char === match && !backslash) {
                 break;
             } else if (backslash) {
                 backslash = false;
